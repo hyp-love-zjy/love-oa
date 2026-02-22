@@ -1,0 +1,15 @@
+{
+"name": "情侣审批系统",
+"short_name": "情侣审批",
+"start_url": ".",
+"display": "standalone",
+"background_color": "#ffe6f0",
+"theme_color": "#ffe6f0",
+"icons": [
+{
+"src": "icon.png",
+"sizes": "512x512",
+"type": "image/png"
+}
+]
+}
