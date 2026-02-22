@@ -231,7 +231,7 @@ const {data}=await db.from("applications")
 .order("created_at",{ascending:false})
 .limit(10)
 
-let html="<h4>申请历史</h4>"
+let html="<h4>审批历史</h4>"
 data.forEach(a=>{
 html+=`<div style="margin-top:6px">
 ${a.title} | ${a.status} |
