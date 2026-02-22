@@ -98,7 +98,7 @@ font-size:16px;
 <div id="status"></div>
 
 <button class="btn-refresh" onclick="refreshStatus()">刷新状态</button>
-<button onclick="showHistory()">历史</button>
+<button onclick="showHistory()">申请记录</button>
 </div>
 
 <div id="yiyiPanel" class="hidden">
@@ -106,7 +106,7 @@ font-size:16px;
 <div id="pending"></div>
 
 <button class="btn-refresh" onclick="refreshStatus()">刷新状态</button>
-<button onclick="showHistory()">历史</button>
+<button onclick="showHistory()">审批记录</button>
 </div>
 
 <div id="history"></div>
@@ -231,7 +231,7 @@ const {data}=await db.from("applications")
 .order("created_at",{ascending:false})
 .limit(10)
 
-let html="<h4>历史</h4>"
+let html="<h4>历史记录</h4>"
 data.forEach(a=>{
 html+=`<div style="margin-top:6px">
 ${a.title} | ${a.status} |
