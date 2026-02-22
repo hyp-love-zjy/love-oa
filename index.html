@@ -3,39 +3,48 @@
 <head>
 <meta charset="UTF-8">
 <title>情侣审批系统 ❤️</title>
- 
+
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 <meta name="theme-color" content="#ffe6f0">
 
+<!-- ⭐ 手机自适应关键 -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+*{box-sizing:border-box}
+
 body{
-font-family:Arial;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;
 background:#ffe6f0;
 text-align:center;
-padding:30px
+padding:20px;
+margin:0;
 }
 
+/* ⭐ 自适应容器 */
 .box{
 background:white;
 padding:20px;
 border-radius:20px;
-width:360px;
+width:95%;
+max-width:420px;
 margin:auto;
-box-shadow:0 8px 25px rgba(255,105,180,0.15)
+box-shadow:0 8px 25px rgba(255,105,180,0.15);
 }
 
 .hidden{display:none}
 
 /* 默认粉色按钮 */
 button{
-margin-top:10px;
-padding:10px 18px;
+margin-top:12px;
+padding:12px;
+width:100%;
 border:none;
-border-radius:20px;
-font-size:15px;
+border-radius:18px;
+font-size:16px;
 font-weight:bold;
 color:#fff;
 background:linear-gradient(135deg,#ff9ac2,#ff6fa5);
@@ -49,42 +58,36 @@ box-shadow:0 6px 15px rgba(255,105,180,0.45);
 background:linear-gradient(135deg,#ffb3d1,#ff85b7);
 }
 
-button:active{
-transform:scale(0.95);
-}
-
-/* ✔ 同意按钮 绿色 */
+/* ✔ 同意按钮 */
 .btn-ok{
 background:linear-gradient(135deg,#4CAF50,#2ecc71);
-box-shadow:0 4px 10px rgba(76,175,80,0.35);
 }
 
-.btn-ok:hover{
-background:linear-gradient(135deg,#66d17a,#3edc84);
-}
-
-/* ✔ 拒绝按钮 红色 */
+/* ✔ 拒绝按钮 */
 .btn-no{
 background:linear-gradient(135deg,#ff4d4d,#ff1f5a);
-box-shadow:0 4px 10px rgba(255,0,70,0.35);
-}
-
-.btn-no:hover{
-background:linear-gradient(135deg,#ff6b6b,#ff4f7a);
 }
 
 textarea,input{
-width:90%;
-padding:8px;
-margin-top:8px;
-border-radius:10px;
+width:100%;
+padding:12px;
+margin-top:10px;
+border-radius:12px;
 border:1px solid #ffc0d6;
 outline:none;
+font-size:16px;
 }
 
 textarea:focus,input:focus{
 border-color:#ff6fa5;
 box-shadow:0 0 6px rgba(255,105,180,0.3);
+}
+
+/* ⭐ 小屏幕优化 */
+@media (max-width:400px){
+h2{font-size:20px}
+h3{font-size:18px}
+button{font-size:15px;padding:10px}
 }
 </style>
 </head>
@@ -102,7 +105,7 @@ box-shadow:0 0 6px rgba(255,105,180,0.3);
 <h3 id="welcome"></h3>
 
 <div id="pipiPanel" class="hidden">
-<textarea id="title" placeholder="申请标题"></textarea><br>
+<textarea id="title" placeholder="申请标题"></textarea>
 <button onclick="submitApply()">提交申请</button>
 <h4>当前申请状态</h4>
 <div id="status"></div>
@@ -116,14 +119,11 @@ box-shadow:0 0 6px rgba(255,105,180,0.3);
 </div>
 
 <div id="history"></div>
-
 </div>
 
 <script>
-
 const SUPABASE_URL="https://grytodltcpczddcfjryl.supabase.co"
 const SUPABASE_KEY="sb_publishable_QsO6ZH_-jCnzeZXWKl8iEA_Qcc4kfn0"
-
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
 
 let role=""
@@ -132,17 +132,9 @@ async function doLogin(){
 const u=document.getElementById("user").value
 const p=document.getElementById("pass").value
 
-if(u==="皮皮" && p==="010906"){
-role="皮皮"
-showMain()
-}
-else if(u==="怡怡" && p==="020609"){
-role="怡怡"
-showMain()
-}
-else{
-alert("账号密码错误")
-}
+if(u==="皮皮" && p==="010906"){role="皮皮";showMain()}
+else if(u==="怡怡" && p==="020609"){role="怡怡";showMain()}
+else alert("账号密码错误")
 }
 
 function showMain(){
@@ -153,8 +145,7 @@ document.getElementById("welcome").innerText="欢迎 "+role
 if(role==="皮皮"){
 document.getElementById("pipiPanel").classList.remove("hidden")
 loadStatus()
-}
-else{
+}else{
 document.getElementById("yiyiPanel").classList.remove("hidden")
 loadPending()
 }
@@ -187,8 +178,8 @@ const {data}=await db.from("applications")
 
 if(data){
 document.getElementById("status").innerText=
-data.title+"  状态："+data.status+
-"  时间："+new Date(data.created_at).toLocaleString("zh-CN",{timeZone:"Asia/Shanghai"})
+data.title+" 状态："+data.status+
+" 时间："+new Date(data.created_at).toLocaleString("zh-CN",{timeZone:"Asia/Shanghai"})
 }
 }
 
@@ -200,7 +191,7 @@ const {data}=await db.from("applications")
 
 let html=""
 data.forEach(a=>{
-html+=`<div>
+html+=`<div style="margin-top:10px;padding:10px;border-bottom:1px solid #ffd6e8">
 ${a.title}
 <button class="btn-ok" onclick="approve(${a.id})">同意</button>
 <button class="btn-no" onclick="reject(${a.id})">拒绝</button>
@@ -232,14 +223,13 @@ const {data}=await db.from("applications")
 
 let html="<h4>申请历史</h4>"
 data.forEach(a=>{
-html+=`<div>
+html+=`<div style="margin-top:6px">
 ${a.title} | ${a.status} |
 ${new Date(a.created_at).toLocaleString("zh-CN",{timeZone:"Asia/Shanghai"})}
 </div>`
 })
 document.getElementById("history").innerHTML=html
 }
-
 </script>
 
 </body>
