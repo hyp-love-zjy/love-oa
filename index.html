@@ -7,8 +7,6 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 <meta name="theme-color" content="#ffe6f0">
-
-<!-- ⭐ 手机自适应关键 -->
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -24,7 +22,6 @@ padding:20px;
 margin:0;
 }
 
-/* ⭐ 自适应容器 */
 .box{
 background:white;
 padding:20px;
@@ -37,7 +34,6 @@ box-shadow:0 8px 25px rgba(255,105,180,0.15);
 
 .hidden{display:none}
 
-/* 默认粉色按钮 */
 button{
 margin-top:12px;
 padding:12px;
@@ -55,17 +51,19 @@ transition:all 0.2s ease;
 button:hover{
 transform:translateY(-2px);
 box-shadow:0 6px 15px rgba(255,105,180,0.45);
-background:linear-gradient(135deg,#ffb3d1,#ff85b7);
 }
 
-/* ✔ 同意按钮 */
 .btn-ok{
 background:linear-gradient(135deg,#4CAF50,#2ecc71);
 }
 
-/* ✔ 拒绝按钮 */
 .btn-no{
 background:linear-gradient(135deg,#ff4d4d,#ff1f5a);
+}
+
+/* 刷新按钮改成蓝色区分 */
+.btn-refresh{
+background:linear-gradient(135deg,#4da6ff,#1f8fff);
 }
 
 textarea,input{
@@ -76,18 +74,6 @@ border-radius:12px;
 border:1px solid #ffc0d6;
 outline:none;
 font-size:16px;
-}
-
-textarea:focus,input:focus{
-border-color:#ff6fa5;
-box-shadow:0 0 6px rgba(255,105,180,0.3);
-}
-
-/* ⭐ 小屏幕优化 */
-@media (max-width:400px){
-h2{font-size:20px}
-h3{font-size:18px}
-button{font-size:15px;padding:10px}
 }
 </style>
 </head>
@@ -107,14 +93,19 @@ button{font-size:15px;padding:10px}
 <div id="pipiPanel" class="hidden">
 <textarea id="title" placeholder="申请标题"></textarea>
 <button onclick="submitApply()">提交申请</button>
+
 <h4>当前申请状态</h4>
 <div id="status"></div>
+
+<button class="btn-refresh" onclick="refreshStatus()">刷新状态</button>
 <button onclick="showHistory()">申请历史</button>
 </div>
 
 <div id="yiyiPanel" class="hidden">
 <h4>待审批</h4>
 <div id="pending"></div>
+
+<button class="btn-refresh" onclick="refreshStatus()">刷新状态</button>
 <button onclick="showHistory()">审批历史</button>
 </div>
 
@@ -127,6 +118,7 @@ const SUPABASE_KEY="sb_publishable_QsO6ZH_-jCnzeZXWKl8iEA_Qcc4kfn0"
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
 
 let role=""
+let autoTimer=null
 
 async function doLogin(){
 const u=document.getElementById("user").value
@@ -147,6 +139,18 @@ document.getElementById("pipiPanel").classList.remove("hidden")
 loadStatus()
 }else{
 document.getElementById("yiyiPanel").classList.remove("hidden")
+loadPending()
+}
+
+/* ⭐ 自动每5秒刷新一次 */
+autoTimer=setInterval(refreshStatus,5000)
+}
+
+/* 手动刷新 */
+function refreshStatus(){
+if(role==="皮皮"){
+loadStatus()
+}else{
 loadPending()
 }
 }
@@ -180,6 +184,8 @@ if(data){
 document.getElementById("status").innerText=
 data.title+" 状态："+data.status+
 " 时间："+new Date(data.created_at).toLocaleString("zh-CN",{timeZone:"Asia/Shanghai"})
+}else{
+document.getElementById("status").innerText="暂无当前申请"
 }
 }
 
@@ -190,6 +196,7 @@ const {data}=await db.from("applications")
 .eq("reviewer","怡怡")
 
 let html=""
+if(data && data.length>0){
 data.forEach(a=>{
 html+=`<div style="margin-top:10px;padding:10px;border-bottom:1px solid #ffd6e8">
 ${a.title}
@@ -197,6 +204,9 @@ ${a.title}
 <button class="btn-no" onclick="reject(${a.id})">拒绝</button>
 </div>`
 })
+}else{
+html="暂无待审批内容"
+}
 document.getElementById("pending").innerHTML=html
 }
 
