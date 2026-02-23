@@ -7,13 +7,12 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 <meta name="theme-color" content="#ffe6f0">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 *{box-sizing:border-box}
-
 body{
 font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;
 background:#ffe6f0;
@@ -21,7 +20,6 @@ text-align:center;
 padding:20px;
 margin:0;
 }
-
 .box{
 background:white;
 padding:20px;
@@ -31,9 +29,7 @@ max-width:420px;
 margin:auto;
 box-shadow:0 8px 25px rgba(255,105,180,0.15);
 }
-
 .hidden{display:none}
-
 button{
 margin-top:12px;
 padding:12px;
@@ -44,35 +40,16 @@ font-size:16px;
 font-weight:bold;
 color:#fff;
 background:linear-gradient(135deg,#ff9ac2,#ff6fa5);
-box-shadow:0 4px 10px rgba(255,105,180,0.3);
-transition:all 0.2s ease;
 }
-
-button:hover{
-transform:translateY(-2px);
-box-shadow:0 6px 15px rgba(255,105,180,0.45);
-}
-
-.btn-ok{
-background:linear-gradient(135deg,#4CAF50,#2ecc71);
-}
-
-.btn-no{
-background:linear-gradient(135deg,#ff4d4d,#ff1f5a);
-}
-
-/* 刷新按钮改成蓝色区分 */
-.btn-refresh{
-background:linear-gradient(135deg,#4da6ff,#1f8fff);
-}
-
+.btn-ok{background:#4CAF50}
+.btn-no{background:#ff4d4d}
+.btn-refresh{background:#4da6ff}
 textarea,input{
 width:100%;
 padding:12px;
 margin-top:10px;
 border-radius:12px;
 border:1px solid #ffc0d6;
-outline:none;
 font-size:16px;
 }
 </style>
@@ -82,8 +59,8 @@ font-size:16px;
 
 <div id="loginBox" class="box">
 <h2>情侣审批系统 ❤️</h2>
-<input id="user" placeholder="账号"><br>
-<input id="pass" type="password" placeholder="密码"><br>
+<input id="user" placeholder="账号">
+<input id="pass" type="password" placeholder="密码">
 <button onclick="doLogin()">登录</button>
 </div>
 
@@ -97,7 +74,7 @@ font-size:16px;
 <h4>当前申请状态</h4>
 <div id="status"></div>
 
-<button class="btn-refresh" onclick="refreshStatus()">刷新状态</button>
+<button class="btn-refresh" onclick="refreshStatus()">刷新</button>
 <button onclick="showHistory()">申请记录</button>
 </div>
 
@@ -105,7 +82,7 @@ font-size:16px;
 <h4>待审批</h4>
 <div id="pending"></div>
 
-<button class="btn-refresh" onclick="refreshStatus()">刷新状态</button>
+<button class="btn-refresh" onclick="refreshStatus()">刷新</button>
 <button onclick="showHistory()">审批记录</button>
 </div>
 
@@ -114,54 +91,54 @@ font-size:16px;
 
 <script>
 const SUPABASE_URL="https://grytodltcpczddcfjryl.supabase.co"
-const SUPABASE_KEY="sb_publishable_QsO6ZH_-jCnzeZXWKl8iEA_Qcc4kfn0"
+const SUPABASE_KEY="你的 anon public key"
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY)
 
 let role=""
-let autoTimer=null
 
-async function doLogin(){
-const u=document.getElementById("user").value
-const p=document.getElementById("pass").value
-
+/* 登录 */
+function doLogin(){
+const u=user.value
+const p=pass.value
 if(u==="皮皮" && p==="010906"){role="皮皮";showMain()}
 else if(u==="怡怡" && p==="020609"){role="怡怡";showMain()}
 else alert("账号密码错误")
 }
 
+/* 主界面 */
 function showMain(){
-document.getElementById("loginBox").classList.add("hidden")
-document.getElementById("mainBox").classList.remove("hidden")
-document.getElementById("welcome").innerText="欢迎 "+role
+loginBox.classList.add("hidden")
+mainBox.classList.remove("hidden")
+welcome.innerText="欢迎 "+role
 
 if(role==="皮皮"){
-document.getElementById("pipiPanel").classList.remove("hidden")
+pipiPanel.classList.remove("hidden")
 loadStatus()
 }else{
-document.getElementById("yiyiPanel").classList.remove("hidden")
+yiyiPanel.classList.remove("hidden")
 loadPending()
 }
 
-/* ⭐ 自动每5秒刷新一次 */
-autoTimer=setInterval(refreshStatus,5000)
+/* ⭐⭐⭐ 实时推送 */
+db.channel("realtime")
+.on(
+"postgres_changes",
+{event:"*",schema:"public",table:"applications"},
+payload=>{
+refreshStatus()
+})
+.subscribe()
 }
 
-/* 手动刷新 */
-function refreshStatus(){
-if(role==="皮皮"){
-loadStatus()
-}else{
-loadPending()
-}
-}
-
+/* 提交申请 */
 async function submitApply(){
-const title=document.getElementById("title").value
+const titleVal=title.value.trim()
+if(!titleVal){alert("写点申请内容嘛");return}
 
 await db.from("applications").update({is_current:false}).eq("applicant","皮皮")
 
 await db.from("applications").insert({
-title:title,
+title:titleVal,
 applicant:"皮皮",
 reviewer:"怡怡",
 status:"待审批",
@@ -169,10 +146,10 @@ is_current:true,
 created_at:new Date().toISOString()
 })
 
-alert("提交成功")
-loadStatus()
+title.value=""
 }
 
+/* 当前状态 */
 async function loadStatus(){
 const {data}=await db.from("applications")
 .select("*")
@@ -180,65 +157,64 @@ const {data}=await db.from("applications")
 .eq("is_current",true)
 .single()
 
-if(data){
-document.getElementById("status").innerText=
-data.title+" 状态："+data.status+
-" 时间："+new Date(data.created_at).toLocaleString("zh-CN",{timeZone:"Asia/Shanghai"})
-}else{
-document.getElementById("status").innerText="暂无当前申请"
-}
+status.innerText=data
+? `${data.title} 状态 ${data.status} 时间 ${new Date(data.created_at).toLocaleString("zh-CN")}`
+: "暂无申请"
 }
 
+/* 待审批 */
 async function loadPending(){
 const {data}=await db.from("applications")
 .select("*")
 .eq("status","待审批")
 .eq("reviewer","怡怡")
 
-let html=""
-if(data && data.length>0){
-data.forEach(a=>{
-html+=`<div style="margin-top:10px;padding:10px;border-bottom:1px solid #ffd6e8">
+pending.innerHTML=data?.length
+? data.map(a=>`
+<div style="margin-top:10px">
 ${a.title}
 <button class="btn-ok" onclick="approve(${a.id})">同意</button>
 <button class="btn-no" onclick="reject(${a.id})">拒绝</button>
-</div>`
-})
-}else{
-html="暂无待审批内容"
-}
-document.getElementById("pending").innerHTML=html
+</div>`).join("")
+: "暂无待审批"
 }
 
+/* 同意拒绝 */
 async function approve(id){
 await db.from("applications")
-.update({status:"已通过",reviewed_at:new Date().toISOString(),is_current:false})
+.update({status:"已通过",is_current:false})
 .eq("id",id)
-loadPending()
 }
-
 async function reject(id){
 await db.from("applications")
-.update({status:"已拒绝",reviewed_at:new Date().toISOString(),is_current:false})
+.update({status:"已拒绝",is_current:false})
 .eq("id",id)
-loadPending()
 }
 
+/* 历史记录 带分页 */
+let page=0
 async function showHistory(){
 const {data}=await db.from("applications")
 .select("*")
 .eq("applicant","皮皮")
 .order("created_at",{ascending:false})
-.limit(10)
+.range(page*10,page*10+9)
 
-let html="<h4>历史记录</h4>"
-data.forEach(a=>{
-html+=`<div style="margin-top:6px">
-${a.title} | ${a.status} |
-${new Date(a.created_at).toLocaleString("zh-CN",{timeZone:"Asia/Shanghai"})}
-</div>`
-})
-document.getElementById("history").innerHTML=html
+if(!data||data.length===0){
+history.innerHTML+="<br>没有更多记录"
+return
+}
+
+history.innerHTML="<h4>历史记录</h4>"+data.map(a=>
+`${a.title} | ${a.status} | ${new Date(a.created_at).toLocaleString("zh-CN")}`
+).join("<br>")
+
+page++
+}
+
+/* 手动刷新 */
+function refreshStatus(){
+role==="皮皮"?loadStatus():loadPending()
 }
 </script>
 
